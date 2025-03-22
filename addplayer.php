@@ -10,12 +10,18 @@
 </head>
 
 <body>
-    <div class="header w-full text-3xl bg-neutral p-5 font-bold text-neutral-content text-center ">
+    <div class="header w-full bg-neutral p-4 md:p-5 text-neutral-content">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-center md:justify-between">
+
         Roaster of Team Webprog
         <a class="btn btn-primary font-bold ml-10 mt-1" href="index.php">Main Page</a>
     </div>
-    <div class="flex">
-        <form action="addplayer.php" method="get" class="mx-auto mt-3 w-3/12 p-10">
+    </div>
+
+    <div class="container mx-auto px-4 py-6">
+    <div class="flex flex-col md:flex-row">
+
+        <form action="addplayer.php" method="get" class="w-full md:w-1/2 lg:w-5/12 mx-auto md:mx-0 mb-8 md:mb-0">
             <h1 class="text-3xl  p-5 font-bold">Add a new player</h1>
 
 
@@ -60,60 +66,112 @@
         </form>
 
         <?php
-            $errors = [];
-            $input = $_GET;
+        if ($_SERVER['SERVER_NAME'] == 'localhost') {
+            // Local environment (XAMPP)
+            $servername = "localhost";
+            $username = "root";
+            $password = "";
+            $dbname = "soccer_team"; // Replace with your local DB name
+            // $port = 3307; // New port number
+            $conn = new mysqli($servername, $username, $password, $dbname);
 
-            if ($_SERVER["REQUEST_METHOD"] == "GET") {
-                if (!isset($input['name']) || trim($input['name']) === ""){
-                    $errors[] = "Enter a name!";
-                }
-                else if (strlen(trim($input['name'])) < 4){
-                    $errors[] = "Enter a name that is at least 4 characters long!";
-                }
+        } else {
+            // Live hosting (InfinityFree)
+            $servername = "sql303.infinityfree.com";
+            $username = "if0_38575461"; // Your InfinityFree database username
+            $password = "EdWf4NY93CR"; // Your InfinityFree database password
+            $dbname = "if0_38575461_soccer_team_db"; // Your InfinityFree database name
+        
+            // Create connection
+        
+            $conn = new mysqli($servername, $username, $password, $dbname);
+
+        }
+
+
+
+        // Check connection
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+
+
+        $errors = [];
+        $input = $_GET;
+
+        if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($input['name'])) {
+            if (!isset($input['name']) || trim($input['name']) === "") {
+                $errors[] = "Enter a name!";
+            } else if (strlen(trim($input['name'])) < 4) {
+                $errors[] = "Enter a name that is at least 4 characters long!";
             }
+
 
 
             if (!isset($input['positions']) || trim($input['positions']) === "") {
                 $errors[] = "Enter the positions!";
             }
+        }
 
+        if (count($errors) === 0 && $_SERVER["REQUEST_METHOD"] == "GET" && isset($input['name']) && isset($input['positions'])) {
+            // Prepare the SQL query
+            $sql = "INSERT INTO players (name, goals2024, positions, img) VALUES (?, ?, ?, ?)";
+
+            // Prepare statement
+            $stmt = $conn->prepare($sql); // Now directly assign it
+        
+            if ($stmt) {
+                // Bind parameters
+                $stmt->bind_param("siss", $input['name'], $input['goals2024'], $input['positions'], $input['img']);
+
+                // // Execute query
+                // if ($stmt->execute()) {
+                //     echo "New player added successfully.";
+                // } else {
+                //     echo "Error: " . $stmt->error;
+                // }
+
+                // Close statement after checking if $stmt is prepared
+                $stmt->close();
+            } else {
+                echo "Error: Could not prepare the SQL statement. " . $conn->error;
+            }
+        }
+
+        // Close the statement
+        // $stmt->close();
+        
         ?>
 
-            
+
 
 
         <?php if (count($errors) > 0): ?>
-            <div class="results w-6/12  m-auto p-10">
-            <div class="errors">
-            <h2 class="text-3xl mb-5 font-bold">Failed addition</h2>
+            <div class="results w-full md:w-1/2 lg:w-7/12 md:pl-8">
+                <div class="errors">
+                    <h2 class="text-3xl mb-5 font-bold">Failed addition</h2>
                     <?php foreach ($errors as $error): ?>
                         <div role="alert" class="alert alert-error mb-2">
-                        <span>Error: <?php echo $error; ?></span>
-                    </div>
+                            <span>Error: <?php echo $error; ?></span>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
 
+            <?php if (count($errors) === 0 && $_SERVER["REQUEST_METHOD"] == "GET" && isset($input['name']) && isset($input['positions'])): ?>
 
-        <!-- <div class="results w-6/12  m-auto p-10">
-            <div class="errors">
-                <h2 class="text-3xl mb-5 font-bold">Failed addition</h2>
-                <div role="alert" class="alert alert-error mb-2">
-                    <span>Error! Task failed successfully.</span>
+                <div class="success">
+                    <h2 class="text-3xl mb-2 font-bold">Successful addition</h2>
+                    <a class="btn btn-primary font-bold mt-1" href="index.php">Go back to Main Page</a>
                 </div>
-                <div role="alert" class="alert alert-error mb-2">
-                    <span>Error! Task failed successfully.</span>
-                </div>
-                <div role="alert" class="alert alert-error mb-2">
-                    <span>Error! Task failed successfully.</span>
-                </div>
-            </div> -->
-
-            <div class="success">
-                <h2 class="text-3xl mb-2 font-bold">Successful addition</h2>
-                <a class="btn btn-primary font-bold mt-1" href="index.php">Go back to Main Page</a>
             </div>
-        </div>
+        <?php endif;
+
+
+
+            ?>
+
     </div>
 </body>
 
