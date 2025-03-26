@@ -73,7 +73,6 @@
             $password = "";
             $dbname = "soccer_team"; // Replace with your local DB name
             // $port = 3307; // New port number
-            $conn = new mysqli($servername, $username, $password, $dbname);
 
         } else {
             // Live hosting (InfinityFree)
@@ -81,13 +80,16 @@
             $username = "if0_38575461"; // Your InfinityFree database username
             $password = "EdWf4NY93CR"; // Your InfinityFree database password
             $dbname = "if0_38575461_soccer_team_db"; // Your InfinityFree database name
-        
-            // Create connection
-        
-            $conn = new mysqli($servername, $username, $password, $dbname);
-
+    
         }
 
+            $conn = new mysqli($servername, $username, $password, $dbname);
+
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        } else {
+            // echo "Connected successfully!";
+        }
 
 
         // Check connection
@@ -125,12 +127,12 @@
                 // Bind parameters
                 $stmt->bind_param("siss", $input['name'], $input['goals2024'], $input['positions'], $input['img']);
 
-                // // Execute query
-                // if ($stmt->execute()) {
-                //     echo "New player added successfully.";
-                // } else {
-                //     echo "Error: " . $stmt->error;
-                // }
+
+if ($stmt->execute()) {
+    // Do nothing, as the existing UI already handles success
+} else {
+    echo "Error: " . $stmt->error;
+}
 
                 // Close statement after checking if $stmt is prepared
                 $stmt->close();
